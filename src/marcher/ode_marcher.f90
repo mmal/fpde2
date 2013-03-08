@@ -12,7 +12,6 @@ module class_ode_marcher
    use class_platonic
    use class_ode_system
    use class_ode_stepper
-   use class_ode_step_control
 
    private
 
@@ -23,20 +22,16 @@ module class_ode_marcher
       integer :: dim = 0
       !> Stepper pointer there will be at least one stepper
       class(ode_stepper), pointer :: s
-      !> Step control structure
-      type(ode_step_control) :: c
-
    contains
-
       !> Applay integration step procedure
       procedure(apply), deferred :: apply
       !> Reset marcher workspace
       procedure(reset), deferred :: reset
-
    end type ode_marcher
 
    interface
 
+      !> Init, free inherited by platonic
       subroutine apply( this, sys, y, t, t1, h, error )
          import :: ode_marcher, ode_system
          class(ode_marcher), intent(inout) :: this

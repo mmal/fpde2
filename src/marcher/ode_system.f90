@@ -5,20 +5,6 @@
 !!
 !! @brief  ODE system class.
 !!
-!! Defines ODE systme via the right hand side of differential equation
-!! @ref func(), the right hand side of jacobian @ref jac(), dimension
-!! of the system @ref dim and other parameters needed in function and
-!! jabobian calling stored in @ref params pointer. Since the jacobian
-!! is not often used, this is an optional element for this object.
-!! Please notice, that if jacobian is defined this object stores the flag
-!! @ref jac_exact which should be set to .true. if the currently associated
-!! jacobian function gives the exact (analytically known) formula. Otherwise,
-!! if this flag is set to .false. it is assumed, that the jacobian function
-!! provides only the jacobian approximation.
-!!
-!! @todo to add (if needed) methods that set the individual ode_system components
-!! separately like set_fun, set_jac, etc.
-!!
 module class_ode_system
 
    use constants_module
@@ -46,13 +32,13 @@ module class_ode_system
          integer, optional :: status
       end subroutine jac_interface
 
-      subroutine mma_interface( t, y, dydt, params, status )
+      subroutine msm_interface( t, y, dydt, params, status )
          real, intent(in) :: t
          real, pointer, contiguous, intent(in) :: y(:)
          real, pointer, contiguous, intent(out) :: dydt(:)
          class(*) :: params
          integer, optional :: status
-      end subroutine mma_interface
+      end subroutine msm_interface
 
    end interface
 
@@ -63,20 +49,15 @@ module class_ode_system
       !> ODE differential equation jacobian function pointer
       procedure(jac_interface), pointer, nopass :: jac => null()
       !> ODE differential equation mass matrix function pointer
-      procedure(mma_interface), pointer, nopass :: mass_matrix => null()
+      procedure(msm_interface), pointer, nopass :: msm => null()
       !> dimension of the system (number of equations)
       integer :: dim = 0
       !> ODE parameters required to calculate the right side and jacobian
       !! of the given ODE
       class(*), pointer :: params
-      !> flag which points if jacobian is analytically known or is approximated
-      logical :: jac_exact = .false.
-
    contains
-
       !> Class ode_system initialization method
       procedure :: init
-
    end type ode_system
 
 contains
@@ -90,10 +71,11 @@ contains
    !! @param params[in] parameters required to calculate the
    !! right side and jacobian of the ODE
    !!
-   subroutine init( sys, fun, jac, dim, params )
+   subroutine init( sys, fun, jac, msm, dim, params )
       class(ode_system) :: sys
       procedure(fun_interface), pointer, intent(in) :: fun
       procedure(jac_interface), pointer, intent(in), optional :: jac
+      procedure(msm_interface), pointer, intent(in), optional :: msm
       integer, intent(in) :: dim
       class(*), target, intent(in), optional :: params
 
@@ -113,6 +95,10 @@ contains
 
       if ( present( jac ) .and. associated( jac ) ) then
          sys % jac => jac
+      end if
+
+      if ( present( msm ) .and. associated( mas ) ) then
+         sys % mas => msm
       end if
 
       if ( present( params ) ) then
