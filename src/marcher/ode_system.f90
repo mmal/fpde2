@@ -32,10 +32,10 @@ module class_ode_system
          integer, optional :: status
       end subroutine jac_interface
 
-      subroutine msm_interface( t, y, dydt, params, status )
+      subroutine msm_interface( t, y, m, params, status )
          real, intent(in) :: t
          real, pointer, contiguous, intent(in) :: y(:)
-         real, pointer, contiguous, intent(out) :: dydt(:)
+         real, pointer, contiguous, intent(out) :: m(:)
          class(*) :: params
          integer, optional :: status
       end subroutine msm_interface
@@ -97,8 +97,8 @@ contains
          sys % jac => jac
       end if
 
-      if ( present( msm ) .and. associated( mas ) ) then
-         sys % mas => msm
+      if ( present( msm ) .and. associated( msm ) ) then
+         sys % msm => msm
       end if
 
       if ( present( params ) ) then
