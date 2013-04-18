@@ -10,6 +10,7 @@ module class_platonic
   use constants_module
   use logger_module
   use flu_module
+  use flu_get_module
 
   private
 
@@ -38,22 +39,28 @@ module class_platonic
 
 contains
 
-  subroutine init(p, error)
-    class(platonic) :: p
+  subroutine init(self, error)
+    class(platonic) :: self
     integer, optional, intent(out) :: error
     if(present(error)) error = FPDE_STATUS_OK
   end subroutine init
 
-  subroutine free(p, error)
-    class(platonic) :: p
+  subroutine free(self, error)
+    class(platonic) :: self
     integer, optional, intent(out) :: error
     if(present(error)) error = FPDE_STATUS_OK
   end subroutine free
 
-  subroutine from_lua(p, l, error)
-    class(platonic) :: p
+  subroutine from_lua(self, l, error)
+    class(platonic) :: self
     type(flu) :: l
     integer, optional, intent(out) :: error
+
+    ! get name
+    call flu_get_atomic( l,&
+         char = self%name,&
+         key = TAG_NAME)
+
     if(present(error)) error = FPDE_STATUS_OK
   end subroutine from_lua
 
