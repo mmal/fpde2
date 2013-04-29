@@ -4,3 +4,5 @@ config/*
 docs/*
 *bkp
 *~
+private/
+make.sh
