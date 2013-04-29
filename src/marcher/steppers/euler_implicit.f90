@@ -1,4 +1,4 @@
-module class_ode_stepper_euler_explicit
+module class_ode_stepper_euler_implicit
 
    use constants_module
    use class_ode_system
@@ -6,28 +6,30 @@ module class_ode_stepper_euler_explicit
 
    private
 
-   type, public, extends(ode_stepper) :: ode_stepper_euler_explicit
+   type, public, extends(ode_stepper) :: ode_stepper_euler_implicit
       real, pointer, contiguous :: k(:)
+      real, pointer, contiguous :: j(:,:)
    contains
       procedure :: init
       procedure :: apply
       procedure :: reset
       procedure :: free
-   end type ode_stepper_euler_explicit
+   end type ode_stepper_euler_implicit
 
 contains
 
    subroutine init( self, error )
-      class(ode_stepper_euler_explicit), intent(inout) :: self
+      class(ode_stepper_euler_implicit), intent(inout) :: self
       integer, optional, intent(out) :: error
       !> Local variables
-      integer :: err
-      if ( self%dim <= 0 ) then
+      integer :: err, dim
+      dim = self%dim
+      if ( dim <= 0 ) then
          err = FPDE_STATUS_ERROR
          call self%loge("incorrect stepper dimension")
          return
       end if
-      allocate(self%k(self%dim), stat=err)
+      allocate(self%k(dim), self%j(dim,dim), stat=err)
       if ( err == 0 ) then
          err = FPDE_STATUS_OK
       else
@@ -38,8 +40,26 @@ contains
    end subroutine init
 
 
+   subroutine newton( self, sys, y, t, h, yerr, dydt_in, dydt_out, error )
+      class(ode_stepper_euler_implicit), intent(inout) :: self
+      class(ode_system), intent(inout) :: sys
+      real, intent(inout) :: y(:)
+      real, intent(in) :: t
+      real, intent(inout) :: h
+      !> Optional arguments
+      real, optional, intent(inout) :: yerr(:)
+      real, optional, intent(in)  :: dydt_in(:)
+      real, optional, intent(inout) :: dydt_out(:)
+      integer, optional, intent(out) :: error
+      !> Local variables
+      integer :: err
+      err = FPDE_STATUS_OK
+      if ( present(error) ) error = err
+   end subroutine newton
+
+
    subroutine apply( self, sys, y, t, h, yerr, dydt_in, dydt_out, error )
-      class(ode_stepper_euler_explicit), intent(inout) :: self
+      class(ode_stepper_euler_implicit), intent(inout) :: self
       class(ode_system), intent(inout) :: sys
       real, intent(inout) :: y(:)
       real, intent(in) :: t
@@ -69,13 +89,14 @@ contains
 
 
    subroutine reset( self, error )
-      class(ode_stepper_euler_explicit), intent(inout) :: self
+      class(ode_stepper_euler_implicit), intent(inout) :: self
       integer, optional, intent(out) :: error
       !> Local variables
       integer :: err
       err = FPDE_STATUS_OK
-      if ( associated(self % k) ) then
+      if ( associated(self % k) .and. associated(self%j) ) then
          self % k = 0.0
+         self % j = 0.0
       else
          call self%loge("cannot reset when not initialized")
          err = FPDE_STATUS_ERROR
@@ -85,17 +106,18 @@ contains
 
 
    subroutine free( self, error )
-      class(ode_stepper_euler_explicit) :: self
+      class(ode_stepper_euler_implicit) :: self
       integer, optional, intent(out) :: error
       !> Local variables
       integer :: err
-      err = FPDE_STATUS_OK
-      deallocate(self%k, stat=err)
-      if (err /= 0 ) then
+      deallocate(self%k, self%j, stat=err)
+      if (err == 0 ) then
+         err = FPDE_STATUS_OK
+      else
          err = FPDE_STATUS_ERROR
          call self%loge("memory deallocation failed")
       end if
-      if(present(error)) error = err
+      if(present(error)) error = FPDE_STATUS_OK
    end subroutine free
 
-end module class_ode_stepper_euler_explicit
+end module class_ode_stepper_euler_implicit

@@ -32,9 +32,9 @@ module class_ode_marcher
    interface
 
       !> Init, free inherited by platonic
-      subroutine apply( this, sys, y, t, t1, h, error )
+      subroutine apply( self, sys, y, t, t1, h, error )
          import :: ode_marcher, ode_system
-         class(ode_marcher), intent(inout) :: this
+         class(ode_marcher), intent(inout) :: self
          class(ode_system) :: sys
          real, intent(inout) :: t
          real, intent(in) :: t1
@@ -43,9 +43,9 @@ module class_ode_marcher
          integer, optional, intent(out) :: error
       end subroutine apply
 
-      subroutine reset( this, error )
+      subroutine reset( self, error )
          import :: ode_marcher
-         class(ode_marcher), intent(inout) :: this
+         class(ode_marcher), intent(inout) :: self
          integer, optional, intent(out) :: error
       end subroutine reset
 
