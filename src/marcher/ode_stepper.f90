@@ -31,23 +31,23 @@ module class_ode_stepper
 
    interface
 
-      subroutine apply( this, sys, y, t, h, yerr, dydt_in, dydt_out, error )
+      subroutine apply( self, sys, y, t, h, yerr, dydt_in, dydt_out, error )
          import :: ode_stepper, ode_system
-         class(ode_stepper), intent(inout) :: this
+         class(ode_stepper), intent(inout) :: self
          class(ode_system), intent(inout) :: sys
-         real, pointer, contiguous, intent(inout) :: y(:)
+         real, intent(inout) :: y(:)
          real, intent(in) :: t
          real, intent(inout) :: h
          !> Optional arguments
-         real, optional, pointer, contiguous, intent(inout) :: yerr(:)
-         real, optional, pointer, contiguous, intent(in)  :: dydt_in(:)
-         real, optional, pointer, contiguous, intent(inout) :: dydt_out(:)
+         real, optional, intent(inout) :: yerr(:)
+         real, optional, intent(in)  :: dydt_in(:)
+         real, optional, intent(inout) :: dydt_out(:)
          integer, optional, intent(out) :: error
       end subroutine apply
 
-      subroutine reset( this, error )
+      subroutine reset( self, error )
          import :: ode_stepper
-         class(ode_stepper), intent(inout) :: this
+         class(ode_stepper), intent(inout) :: self
          integer, optional, intent(out) :: error
       end subroutine reset
 
